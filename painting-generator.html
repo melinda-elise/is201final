@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watercolor Studio | Elise Lawlor</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #f3edf8;
+            background-image:
+                radial-gradient(ellipse at 10% 10%, rgba(196,162,224,0.45) 0%, transparent 52%),
+                radial-gradient(ellipse at 88% 85%, rgba(147,192,224,0.45) 0%, transparent 52%);
+            font-family: Georgia, 'Times New Roman', serif;
+            color: #2d2a3e;
+            min-height: 100vh;
+        }
+
+        /* NAV */
+        nav {
+            background-color: #7b5ea7;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 13px 32px;
+        }
+        nav .brand { color: #fff; text-decoration: none; font-size: 1.05rem; font-weight: bold; }
+        nav .links a { color: #ede0ff; text-decoration: none; font-family: Arial, sans-serif; font-size: 0.88rem; margin-left: 22px; }
+        nav .links a:hover { color: #f9c6df; text-decoration: underline; }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #7b5ea7 0%, #4e82b4 100%);
+            color: #fff; text-align: center; padding: 44px 24px 34px;
+        }
+        header h1 { font-size: 2.3rem; letter-spacing: 2px; margin-bottom: 8px; text-shadow: 1px 2px 8px rgba(0,0,0,0.22); }
+        header p { font-style: italic; opacity: 0.9; font-size: 1rem; }
+
+        /* MAIN LAYOUT */
+        #app {
+            max-width: 1100px; margin: 32px auto 60px; padding: 0 20px;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 20px; align-items: start;
+        }
+        @media (max-width: 720px) { #app { grid-template-columns: 1fr; } }
+
+        /* TOOLBAR PANEL */
+        #toolbar {
+            background: rgba(255,255,255,0.86); border-radius: 14px;
+            padding: 22px 18px; box-shadow: 0 4px 20px rgba(123,94,167,0.14);
+            border-left: 6px solid #7b5ea7;
+        }
+        #toolbar h2 { color: #7b5ea7; font-size: 1.15rem; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e0d3f5; }
+
+        .tool-section { margin-bottom: 18px; }
+        .tool-label {
+            display: block; font-family: Arial, sans-serif; font-size: 0.78rem;
+            font-weight: bold; color: #5a4f72; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* COLOR SWATCHES */
+        #color-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+        }
+        .swatch {
+            width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid transparent;
+            cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+        }
+        .swatch:hover { transform: scale(1.15); }
+        .swatch.active { border-color: #2d2a3e; transform: scale(1.15); }
+
+        /* CUSTOM COLOR */
+        #custom-color {
+            width: 100%; height: 34px; border: 2px solid #cfc0e6; border-radius: 8px;
+            cursor: pointer; padding: 2px; background: #faf8ff; margin-top: 8px;
+        }
+
+        /* SLIDER */
+        .slider-row { display: flex; align-items: center; gap: 8px; }
+        input[type="range"] {
+            flex: 1; accent-color: #7b5ea7; cursor: pointer;
+        }
+        .slider-val {
+            font-family: Arial, sans-serif; font-size: 0.78rem; color: #7b5ea7;
+            min-width: 28px; text-align: right;
+        }
+
+        /* TOOL BUTTONS */
+        .tool-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+        .tool-btn {
+            padding: 8px 4px; border: 2px solid #cfc0e6; border-radius: 8px;
+            background: #faf8ff; font-family: Georgia, serif; font-size: 0.8rem;
+            color: #5a4f72; cursor: pointer; text-align: center; transition: all 0.18s;
+        }
+        .tool-btn:hover { border-color: #7b5ea7; background: #f0eaff; }
+        .tool-btn.active { border-color: #7b5ea7; background: #7b5ea7; color: #fff; }
+
+        /* ACTION BUTTONS */
+        .action-btn {
+            width: 100%; padding: 9px; margin-top: 7px;
+            border: 2px solid #cfc0e6; border-radius: 8px;
+            background: #faf8ff; font-family: Georgia, serif; font-size: 0.85rem;
+            color: #5a4f72; cursor: pointer; transition: all 0.18s; text-align: center;
+        }
+        .action-btn:hover { border-color: #7b5ea7; background: #f0eaff; color: #7b5ea7; }
+        #clear-btn { border-color: #d09090; color: #a04050; }
+        #clear-btn:hover { background: #a04050; color: #fff; border-color: #a04050; }
+
+        /* CANVAS PANEL */
+        #canvas-panel {
+            background: rgba(255,255,255,0.86); border-radius: 14px;
+            padding: 20px; box-shadow: 0 4px 20px rgba(123,94,167,0.14);
+            border-left: 6px solid #4e82b4;
+        }
+        #canvas-panel h2 { color: #4e82b4; font-size: 1.15rem; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #e0d3f5; }
+
+        #canvas-wrap {
+            border: 3px solid #cfc0e6; border-radius: 10px; overflow: hidden;
+            background: #fff; cursor: crosshair; line-height: 0;
+        }
+        #drawing-canvas { display: block; width: 100%; touch-action: none; }
+
+        #canvas-hint {
+            font-family: Arial, sans-serif; font-size: 0.78rem; color: #9080aa;
+            font-style: italic; margin-top: 10px; text-align: center;
+        }
+
+        /* FOOTER */
+        footer {
+            background-color: #7b5ea7; color: #ede0ff; text-align: center;
+            padding: 22px 20px; font-family: Arial, Helvetica, sans-serif; font-size: 0.88rem;
+        }
+        footer a { color: #f9c6df; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="brand" href="index.html">Elise Lawlor</a>
+    <div class="links">
+        <a href="index.html">Home &amp; R&eacute;sum&eacute;</a>
+        <a href="watercolor.html">Watercoloring</a>
+    </div>
+</nav>
+
+<header>
+    <h1>&#127912; Watercolor Studio</h1>
+    <p>Pick a color and paint your own watercolor masterpiece</p>
+</header>
+
+<div id="app">
+
+    <!-- TOOLBAR -->
+    <div id="toolbar">
+        <h2>Tools</h2>
+
+        <div class="tool-section">
+            <span class="tool-label">Colors</span>
+            <div id="color-grid">
+                <!-- watercolor-inspired palette — filled by JS -->
+            </div>
+            <input type="color" id="custom-color" value="#7b5ea7" title="Custom color">
+        </div>
+
+        <div class="tool-section">
+            <span class="tool-label">Brush Size</span>
+            <div class="slider-row">
+                <input type="range" id="size-slider" min="2" max="60" value="18">
+                <span class="slider-val" id="size-val">18</span>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <span class="tool-label">Opacity</span>
+            <div class="slider-row">
+                <input type="range" id="opacity-slider" min="5" max="100" value="35">
+                <span class="slider-val" id="opacity-val">35%</span>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <span class="tool-label">Mode</span>
+            <div class="tool-btn-grid">
+                <button class="tool-btn active" id="btn-brush">&#127981; Brush</button>
+                <button class="tool-btn" id="btn-eraser">&#9003; Eraser</button>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <span class="tool-label">Actions</span>
+            <button class="action-btn" id="undo-btn">&#8630; Undo</button>
+            <button class="action-btn" id="save-btn">&#8599; Save PNG</button>
+            <button class="action-btn" id="clear-btn">&#128465; Clear Canvas</button>
+        </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div id="canvas-panel">
+        <h2>Your Canvas</h2>
+        <div id="canvas-wrap">
+            <canvas id="drawing-canvas"></canvas>
+        </div>
+        <p id="canvas-hint">Click and drag to paint &mdash; low opacity strokes layer up just like real watercolor</p>
+    </div>
+
+</div>
+
+<footer>
+    <p>&copy; 2024 Elise Lawlor &nbsp;&bull;&nbsp;
+       <a href="watercolor.html">Back to Watercoloring</a> &nbsp;&bull;&nbsp;
+       <a href="index.html">Home &amp; R&eacute;sum&eacute;</a>
+    </p>
+</footer>
+
+<script>
+window.addEventListener('load', () => {
+
+    // ── Palette ──
+    const colors = [
+        '#e05c7a','#e8875a','#e8c45a','#7ec47a','#5ab0e8',
+        '#7b5ea7','#4e82b4','#c06080','#88c0a0','#d4a0c8',
+        '#f0c8a0','#a0d0e8','#6070c0','#c89060','#e0b0d0',
+        '#404080','#208060','#c05030','#806040','#303030',
+    ];
+
+    let activeColor = colors[0];
+    const grid = document.getElementById('color-grid');
+
+    colors.forEach((hex, i) => {
+        const sw = document.createElement('button');
+        sw.className = 'swatch' + (i === 0 ? ' active' : '');
+        sw.style.background = hex;
+        sw.title = hex;
+        sw.addEventListener('click', () => {
+            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+            sw.classList.add('active');
+            activeColor = hex;
+            document.getElementById('custom-color').value = hex;
+            mode = 'brush';
+            updateModeButtons();
+        });
+        grid.appendChild(sw);
+    });
+
+    document.getElementById('custom-color').addEventListener('input', e => {
+        activeColor = e.target.value;
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        mode = 'brush';
+        updateModeButtons();
+    });
+
+    // ── Canvas ──
+    const canvas = document.getElementById('drawing-canvas');
+    const ctx    = canvas.getContext('2d');
+    const wrap   = document.getElementById('canvas-wrap');
+
+    // Size the canvas now that layout is complete
+    canvas.width  = wrap.clientWidth;
+    canvas.height = Math.round(wrap.clientWidth * 0.65);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ── Sliders ──
+    const sizeSlider    = document.getElementById('size-slider');
+    const opacitySlider = document.getElementById('opacity-slider');
+    const sizeVal       = document.getElementById('size-val');
+    const opacityVal    = document.getElementById('opacity-val');
+
+    sizeSlider.addEventListener('input', () => {
+        sizeVal.textContent = sizeSlider.value;
+    });
+    opacitySlider.addEventListener('input', () => {
+        opacityVal.textContent = opacitySlider.value + '%';
+    });
+
+    // ── Mode ──
+    let mode = 'brush';
+    function updateModeButtons() {
+        document.getElementById('btn-brush').classList.toggle('active',  mode === 'brush');
+        document.getElementById('btn-eraser').classList.toggle('active', mode === 'eraser');
+    }
+    document.getElementById('btn-brush').addEventListener('click', () => {
+        mode = 'brush'; updateModeButtons();
+    });
+    document.getElementById('btn-eraser').addEventListener('click', () => {
+        mode = 'eraser'; updateModeButtons();
+    });
+
+    // ── Undo ──
+    const undoStack = [];
+    function saveState() {
+        undoStack.push(canvas.toDataURL());
+        if (undoStack.length > 20) undoStack.shift();
+    }
+    document.getElementById('undo-btn').addEventListener('click', () => {
+        if (!undoStack.length) return;
+        const img = new Image();
+        img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+        img.src = undoStack.pop();
+    });
+
+    // ── Drawing ──
+    let painting = false;
+    let lastX = 0, lastY = 0;
+
+    function getPos(e) {
+        const r = canvas.getBoundingClientRect();
+        const src = e.touches ? e.touches[0] : e;
+        // scale from CSS pixels to canvas pixels
+        return {
+            x: (src.clientX - r.left) * (canvas.width  / r.width),
+            y: (src.clientY - r.top)  * (canvas.height / r.height)
+        };
+    }
+
+    function startDraw(e) {
+        e.preventDefault();
+        saveState();
+        painting = true;
+        const p = getPos(e);
+        lastX = p.x; lastY = p.y;
+        stroke(p.x, p.y);
+    }
+
+    function moveDraw(e) {
+        if (!painting) return;
+        e.preventDefault();
+        const p = getPos(e);
+        stroke(p.x, p.y);
+        lastX = p.x; lastY = p.y;
+    }
+
+    function stroke(x, y) {
+        const size    = parseInt(sizeSlider.value);
+        const opacity = parseInt(opacitySlider.value) / 100;
+
+        ctx.save();
+        ctx.globalCompositeOperation = mode === 'eraser' ? 'destination-out' : 'source-over';
+        ctx.globalAlpha = opacity;
+        ctx.strokeStyle = activeColor;
+        ctx.fillStyle   = activeColor;
+        ctx.lineWidth   = size;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        // watercolor bloom
+        if (mode === 'brush') {
+            ctx.globalAlpha = opacity * 0.15;
+            ctx.beginPath();
+            ctx.arc(x, y, size * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    function endDraw() { painting = false; }
+
+    canvas.addEventListener('mousedown',  startDraw);
+    canvas.addEventListener('mousemove',  moveDraw);
+    canvas.addEventListener('mouseup',    endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove',  moveDraw,  { passive: false });
+    canvas.addEventListener('touchend',   endDraw);
+
+    // ── Actions ──
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        saveState();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+    document.getElementById('save-btn').addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.download = 'my-watercolor.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+    });
+
+}); // end load
+</script>
+
+</body>
+</html>
